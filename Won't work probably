@@ -1,0 +1,126 @@
+local Fluent = loadstring(game:HttpGet("https://raw.githubusercontent.com/RileyBeeRBLX4/UI-Library/refs/heads/main/Fluent%20UI/Library.lua"))()
+local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
+local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
+
+local Window = Fluent:CreateWindow({
+    Title = "TvHub" .. Fluent.Version,
+    SubTitle = "by TvZone",
+    TabWidth = 160,
+    Size = UDim2.fromOffset(580, 460),
+    Acrylic = true,
+    Theme = "Dark",
+    MinimizeKey = Enum.KeyCode.LeftControl
+})
+
+local Tabs = {
+    Main = Window:AddTab({ Title = "Book 1", Icon = "" }),
+    Other = Window:AddTab({ Title = "Other", Icon = "" })
+}
+
+local Section = Tabs.Main:AddSection("B1c2")
+
+Tabs.Main:AddButton({
+    Title = "AutoPass",
+    Callback = function()
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(65.1209945678711, 56.403282165527344, -1584.929931640625)
+    end
+})
+
+local Section = Tabs.Other:AddSection("ESP Features")
+
+Tabs.Other:AddButton({
+    Title = "ESP (Players Only)",
+    Callback = function()
+        loadstring(game:HttpGet('https://raw.githubusercontent.com/Lucasfin000/SpaceHub/main/UESP'))()
+    end
+})
+
+Tabs.Other:AddButton({
+    Title = "ESP",
+    Callback = function()
+        local Toggles = shared.Toggles
+        local Options = shared.Options
+
+        local Script = shared.Script
+        local ESPLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/deividcomsono/MS-ESP/refs/heads/main/source.lua"))()
+        shared.ESPLibrary = ESPLibrary
+
+        type ESP = {
+            Color: Color3,
+            IsEntity: boolean,
+            IsDoubleDoor: boolean,
+            Object: Instance,
+            Offset: Vector3,
+            Text: string,
+            TextParent: Instance,
+            Type: string
+        }
+
+        function Script.Functions.ESP(args: ESP)
+            if not args.Object then return Script.Functions.Warn("ESP Object is nil") end
+
+            local ESPManager = {
+                Object = args.Object,
+                Text = args.Text or "No Text",
+                Color = args.Color or Color3.new(),
+                MaxDistance = args.MaxDistance or 5000,
+                Offset = args.Offset or Vector3.zero,
+                IsEntity = args.IsEntity or false,
+                IsDoubleDoor = args.IsDoubleDoor or false,
+                Type = args.Type or "None",
+                OnDestroy = args.OnDestroy or nil,
+
+                Invisible = false,
+                Humanoid = nil
+            }
+
+            if ESPManager.IsEntity and ESPManager.Object.PrimaryPart then
+                if ESPManager.Object.PrimaryPart.Transparency == 1 then
+                    ESPManager.Invisible = true
+                    ESPManager.Object.PrimaryPart.Transparency = 0.99
+                end
+
+                local humanoid = ESPManager.Object:FindFirstChildOfClass("Humanoid")
+                if not humanoid then humanoid = Instance.new("Humanoid", ESPManager.Object) end
+                ESPManager.Humanoid = humanoid
+            end
+
+            local ESPInstance = ESPLibrary.ESP.Highlight({
+                Name = ESPManager.Text,
+                Model = ESPManager.Object,
+                MaxDistance = ESPManager.MaxDistance,
+                StudsOffset = ESPManager.Offset,
+
+                FillColor = ESPManager.Color,
+                OutlineColor = ESPManager.Color,
+                TextColor = ESPManager.Color,
+                TextSize = Options.ESPTextSize.Value or 16,
+
+                FillTransparency = Options.ESPFillTransparency.Value,
+                OutlineTransparency = Options.ESPOutlineTransparency.Value,
+
+                Tracer = {
+                    Enabled = true,
+                    From = Options.ESPTracerStart.Value,
+                    Color = ESPManager.Color
+                },
+                
+                Arrow = {
+                    Enabled = true,
+                    CenterOffset = Options.ESPArrowCenterOffset.Value,
+                    Color = ESPManager.Color
+                },
+
+                OnDestroy = ESPManager.OnDestroy or function()
+                    if ESPManager.Object.PrimaryPart and ESPManager.Invisible then ESPManager.Object.PrimaryPart.Transparency = 1 end
+                    if ESPManager.Humanoid then ESPManager.Humanoid:Destroy() end
+                end
+            })
+
+            table.insert(Script.ESPTable[args.Type], ESPInstance)
+
+            return ESPInstance
+        end
+
+    end
+})
